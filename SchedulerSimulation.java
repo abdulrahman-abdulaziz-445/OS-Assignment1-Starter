@@ -22,7 +22,7 @@ class Colors {
     public static final String BRIGHT_CYAN = "\u001B[96m";
     public static final String BRIGHT_YELLOW = "\u001B[93m";
     public static final String BRIGHT_GREEN = "\u001B[92m";
-    public static final String BRIGHT_MAGENTA = "\u001B[95m";
+    public static final String BRIGHT_MAGENTA = "\u001B[95m"; // the color used for the summary table header and footer
 }
 
 // Class representing a process that implements Runnable to be run by a thread
