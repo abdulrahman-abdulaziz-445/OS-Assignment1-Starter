@@ -3,7 +3,7 @@ import java.util.Queue;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
+
 // ANSI Color Codes for enhanced terminal output
 class Colors {
     public static final String RESET = "\u001B[0m";
@@ -29,16 +29,34 @@ class Process implements Runnable {
     private int burstTime; // Total time the process requires to complete (in milliseconds)
     private int timeQuantum; // Time slice (time quantum) allowed per CPU access (in milliseconds)
     private int remainingTime; // Time left for the process to finish its execution
+    private int priority; // feature one: Priority level of the process (lower number = higher priority)
+    private long creationTime;
+    private long totalWaitingTime;
+    private long lastTimeEnteredQueue; // feature three: Track the last time the process entered the ready queue for waiting time calculation 
 
-    // Constructor to initialize the process with name, burst time, and time quantum
-    public Process(String name, int burstTime, int timeQuantum) {
+    // Constructor to initialize the process with name, burst time, time quantum, and priority
+    public Process(String name, int burstTime, int timeQuantum, int priority) {
         this.name = name;
         this.burstTime = burstTime;
         this.timeQuantum = timeQuantum;
-        this.remainingTime = burstTime; // Initially, remaining time is equal to the burst time
+        this.priority = priority; //feature one
+        this.remainingTime = burstTime;
+        this.creationTime = System.currentTimeMillis(); // Initially, remaining time is equal to the burst time
+        this.totalWaitingTime = 0; // feature three: Initialize total waiting time to 0
     }
 
+    public void markEnteredQueue() {
+        this.lastTimeEnteredQueue = System.currentTimeMillis();
+    } //feature three: Method to mark when the process enters the ready queue, which records the current time for waiting time calculation
+
+    public void markStartedRunning() {
+        this.totalWaitingTime += (System.currentTimeMillis() - this.lastTimeEnteredQueue);
+    } //feature three: Method to mark when the process starts running, which calculates the waiting time since it last entered the queue and adds it to the total waiting time
     // This method will be called when the thread for this process is started
+    public long getWaitingTime() {
+        return this.totalWaitingTime;
+    } // feature three: Getter method to retrieve the total waiting time of the process, which can be used for reporting at the end of the simulation
+
     @Override
     public void run() {
         // Simulate running for either the time quantum or remaining time, whichever is smaller
@@ -137,6 +155,10 @@ class Process implements Runnable {
         return remainingTime;
     }
 
+    public int getPriority() {
+        return priority;
+    } // feature one
+
     // Check if the process has finished (i.e., no remaining time)
     public boolean isFinished() {
         return remainingTime <= 0;
@@ -144,10 +166,11 @@ class Process implements Runnable {
 }
 
 public class SchedulerSimulation {
+    private static int totalContextSwitches = 0; // feature two: counter for total context switches
     public static void main(String[] args) {
         // ⚠️ IMPORTANT: Put your student ID here to seed the random number generator
         // This makes your output unique to you - DO NOT forget to change this!
-        int studentID = 123456789;  // ← CHANGE THIS TO YOUR ACTUAL STUDENT ID
+        int studentID = 445050091;  // ← CHANGE THIS TO YOUR ACTUAL STUDENT ID
         
         Random random = new Random(studentID);
         
@@ -195,9 +218,9 @@ public class SchedulerSimulation {
         for (int i = 1; i <= numProcesses; i++) {
             // Random burst time for each process between timeQuantum/2 and 3*timeQuantum
             int burstTime = timeQuantum/2 + random.nextInt(2 * timeQuantum + 1);
-            
-            // Create a new process object with a unique name, burst time, and the defined time quantum
-            Process process = new Process("P" + i, burstTime, timeQuantum);
+            int priority = 1 + random.nextInt(5);
+            // Create a new process object with a unique name, burst time, time quantum, and priority
+            Process process = new Process("P" + i, burstTime, timeQuantum, priority);
             
             // Add the process to the ready queue and the map
             addProcessToQueue(process, processQueue, processMap);
@@ -218,7 +241,13 @@ public class SchedulerSimulation {
         // Loop to manage the scheduling of processes
         while (!processQueue.isEmpty()) {
             // Get the next thread from the queue (FIFO)
-            Thread currentThread = processQueue.poll(); // Dequeues the next thread
+            Thread currentThread = processQueue.poll();
+            totalContextSwitches++; // feature two: Increment context switch counter
+            
+            Process p = processMap.get(currentThread);
+            if (p != null) {
+                p.markStartedRunning(); // feature three: Mark when the process starts running to calculate waiting time
+            } // feature three: Mark when the process starts running to calculate waiting time
             
             // Print the current process queue (list of process IDs in the queue)
             System.out.println(Colors.BOLD + Colors.MAGENTA + "┌─ Ready Queue " + "─".repeat(65) + Colors.RESET);
@@ -276,7 +305,20 @@ public class SchedulerSimulation {
         System.out.println(Colors.BOLD + Colors.BRIGHT_GREEN + 
                           "╚════════════════════════════════════════════════════════════════════════════════╝" + 
                           Colors.RESET + "\n");
-    }
+        System.out.println(Colors.BOLD + Colors.CYAN + "  Total context switches: " + 
+                          Colors.RESET + Colors.BRIGHT_WHITE + totalContextSwitches + Colors.RESET + "\n"); //feature two: Print total context switches at the end                  
+    
+        System.out.println(Colors.BOLD + Colors.BRIGHT_MAGENTA + "╔════════════════════ SUMMARY TABLE ════════════════════╗" + Colors.RESET); // feature three: Print a summary table at the end showing each process's name, burst time, and total waiting time in the ready queue
+        System.out.println(String.format(Colors.BOLD + "║ %-15s | %-15s | %-15s ║" + Colors.RESET, "Process Name", "Burst Time", "Waiting Time"));
+        System.out.println("╠═══════════════════════════════════════════════════════╣");            
+
+        for (Process p : processMap.values()) {
+            System.out.println(String.format("║ %-15s | %-11d ms | %-11d ms ║", 
+                               p.getName(), p.getBurstTime(), p.getWaitingTime()));
+        }
+
+        System.out.println(Colors.BOLD + Colors.BRIGHT_MAGENTA + "╚═══════════════════════════════════════════════════════╝" + Colors.RESET); // feature three: Print a summary table at the end showing each process's name, burst time, and total waiting time in the ready queue
+                        }
     
     // Method to add a process to the queue and map, while printing a "ready" message
     public static void addProcessToQueue(Process process, Queue<Thread> processQueue, 
@@ -289,11 +331,14 @@ public class SchedulerSimulation {
         
         // Map the thread to the process, so we can track the process associated with each thread
         processMap.put(thread, process);
+
+        process.markEnteredQueue(); // feature three: Mark when the process enters the ready queue
         
         // Print a message indicating the process has entered the ready queue
         System.out.println(Colors.BLUE + "  ➕ " + Colors.BOLD + Colors.CYAN + process.getName() + 
+                          Colors.RESET + Colors.WHITE + " (Priority: " + process.getPriority() + ")" + 
                           Colors.RESET + Colors.BLUE + " added to ready queue" + Colors.RESET + 
                           " │ Burst time: " + Colors.YELLOW + process.getBurstTime() + "ms" + 
-                          Colors.RESET);
+                          Colors.RESET); // feature one
     }
 }
