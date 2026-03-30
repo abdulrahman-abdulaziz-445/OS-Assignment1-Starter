@@ -3,6 +3,7 @@ import java.util.Queue;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.Comparator; // Added for sorting the summary table
 
 // ANSI Color Codes for enhanced terminal output
 class Colors {
@@ -21,6 +22,7 @@ class Colors {
     public static final String BRIGHT_CYAN = "\u001B[96m";
     public static final String BRIGHT_YELLOW = "\u001B[93m";
     public static final String BRIGHT_GREEN = "\u001B[92m";
+    public static final String BRIGHT_MAGENTA = "\u001B[95m";
 }
 
 // Class representing a process that implements Runnable to be run by a thread
@@ -52,6 +54,7 @@ class Process implements Runnable {
     public void markStartedRunning() {
         this.totalWaitingTime += (System.currentTimeMillis() - this.lastTimeEnteredQueue);
     } //feature three: Method to mark when the process starts running, which calculates the waiting time since it last entered the queue and adds it to the total waiting time
+    
     // This method will be called when the thread for this process is started
     public long getWaitingTime() {
         return this.totalWaitingTime;
@@ -167,6 +170,7 @@ class Process implements Runnable {
 
 public class SchedulerSimulation {
     private static int totalContextSwitches = 0; // feature two: counter for total context switches
+    
     public static void main(String[] args) {
         // ⚠️ IMPORTANT: Put your student ID here to seed the random number generator
         // This makes your output unique to you - DO NOT forget to change this!
@@ -247,7 +251,7 @@ public class SchedulerSimulation {
             Process p = processMap.get(currentThread);
             if (p != null) {
                 p.markStartedRunning(); // feature three: Mark when the process starts running to calculate waiting time
-            } // feature three: Mark when the process starts running to calculate waiting time
+            }
             
             // Print the current process queue (list of process IDs in the queue)
             System.out.println(Colors.BOLD + Colors.MAGENTA + "┌─ Ready Queue " + "─".repeat(65) + Colors.RESET);
@@ -306,19 +310,23 @@ public class SchedulerSimulation {
                           "╚════════════════════════════════════════════════════════════════════════════════╝" + 
                           Colors.RESET + "\n");
         System.out.println(Colors.BOLD + Colors.CYAN + "  Total context switches: " + 
-                          Colors.RESET + Colors.BRIGHT_WHITE + totalContextSwitches + Colors.RESET + "\n"); //feature two: Print total context switches at the end                  
+                          Colors.RESET + Colors.BRIGHT_WHITE + totalContextSwitches + Colors.RESET + "\n");               
     
-        System.out.println(Colors.BOLD + Colors.BRIGHT_MAGENTA + "╔════════════════════ SUMMARY TABLE ════════════════════╗" + Colors.RESET); // feature three: Print a summary table at the end showing each process's name, burst time, and total waiting time in the ready queue
+        System.out.println(Colors.BOLD + Colors.BRIGHT_MAGENTA + "╔════════════════════ SUMMARY TABLE ════════════════════╗" + Colors.RESET); 
         System.out.println(String.format(Colors.BOLD + "║ %-15s | %-15s | %-15s ║" + Colors.RESET, "Process Name", "Burst Time", "Waiting Time"));
         System.out.println("╠═══════════════════════════════════════════════════════╣");            
 
-        for (Process p : processMap.values()) {
-            System.out.println(String.format("║ %-15s | %-11d ms | %-11d ms ║", 
-                               p.getName(), p.getBurstTime(), p.getWaitingTime()));
-        }
+        // FIX APPLIED HERE: Deduplicates and perfectly sorts by the number in the process name (e.g., P1, P2, P10)
+        processMap.values().stream()
+            .distinct()
+            .sorted(Comparator.comparingInt(p -> Integer.parseInt(p.getName().substring(1))))
+            .forEach(p -> {
+                System.out.println(String.format("║ %-15s | %-11d ms | %-11d ms ║", 
+                                   p.getName(), p.getBurstTime(), p.getWaitingTime()));
+            });
 
-        System.out.println(Colors.BOLD + Colors.BRIGHT_MAGENTA + "╚═══════════════════════════════════════════════════════╝" + Colors.RESET); // feature three: Print a summary table at the end showing each process's name, burst time, and total waiting time in the ready queue
-                        }
+        System.out.println(Colors.BOLD + Colors.BRIGHT_MAGENTA + "╚════════════...╝" + Colors.RESET);
+    }
     
     // Method to add a process to the queue and map, while printing a "ready" message
     public static void addProcessToQueue(Process process, Queue<Thread> processQueue, 
