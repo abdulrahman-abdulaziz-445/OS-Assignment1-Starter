@@ -65,15 +65,15 @@ Example from my output:
 
 [Write your answer here. For each state, explain when P1 enters that state during the simulation. Use your understanding of the code to trace through the lifecycle.]
 
-1. **New**: [When is P1 in New state?]
+1. **New**: P1 is in the New state the moment the Process process = new Process(...) line runs inside the for loop. At this point, the process object and its thread have been created in memory, but the thread hasn't actually started doing anything yet
 
-2. **Runnable**: [When does P1 become Runnable?]
+2. **Runnable**: P1 enters the Runnable state when processQueue.add(thread) is called. In Java, once a thread is added to a scheduler and is ready to be picked, It’s not actually using the CPU yet, but it's waiting its turn in the queue.
 
-3. **Running**: [When is P1 Running?]
+3. **Running**: P1 moves to the Running state the moment the code executes currentThread.start(). This triggers the run() method in the Process class.
 
-4. **Waiting**: [When/why would P1 be Waiting?]
+4. **Waiting**: P1 enters a Waiting state TIMED_WAITING during two : Thread.sleep(stepTime) / currentThread.join()
 
-5. **Terminated**: [When is P1 Terminated?]
+5. **Terminated**: P1 reaches the Terminated state once its remainingTime hits 0 and the run() method finishes. 
 
 ---
 
