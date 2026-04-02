@@ -50,16 +50,16 @@ Time
 
 ---
 
-### Entry 2 - [Date and Time]
-**What I did**: 
+### Entry 2 - [2/4/2026 3:30pm]
+**What I did**: answering the questions and writing the reflection
 
-**Details**: 
+**Details**: Answering the 4 reflection questions provided in the file-Answering the 4 technical questions.
 
-**Challenges**: 
+**Challenges**: ansewrinng in 4-5 sentances
 
-**Solution**: 
+**Solution**: using AI and other resources to answer
 
-**Time spent**: 
+**Time spent**: 3 hour
 
 ---
 
