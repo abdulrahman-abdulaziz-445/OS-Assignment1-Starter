@@ -83,31 +83,31 @@ Example from my output:
 
 **Your Answer:**
 
-### Example 1: [Name of application/scenario]
+### Example 1: Web Server Request Handling
 
 **Description**: 
-[Describe the real-world scenario or application]
+When thousands of users visit a popular website at the same time, the server creates a thread for each incoming request to fetch data or process a login.
 
 **Why Round-Robin works well here**: 
-[Explain why Round-Robin scheduling is suitable. Consider fairness, responsiveness, predictability, etc.]
+Round-Robin ensures responsiveness and fairness. If one user is trying to download a massive high-definition video while another just wants to load a tiny text comment, Round-Robin prevents the large download from "starving" the small request.
 
-### Example 2: [Name of application/scenario]
+### Example 2: Multitasking in Desktop Operating Systems
 
 **Description**: 
-[Describe the real-world scenario or application]
+Modern operating systems run many applications simultaneously, Each of these apps uses background threads to perform tasks like playing audio or saving a file.
 
 **Why Round-Robin works well here**: 
-[Explain why Round-Robin scheduling is suitable. Consider fairness, responsiveness, predictability, etc.]
+This algorithm is ideal for interactivity. Because the time Quantum is usually very small the CPU switches between your music player and your typing in Word so fast that it creates the illusion of everything happening at once.
 
 ---
 
 ## Summary
 
 **Key concepts I understood through these questions:**
-1. 
-2. 
-3. 
+1. Request Handling
+2. Multitasking in Operating Systems
+3. the thread vs process 
 
 **Concepts I need to study more:**
-1. 
-2. 
+1. round robin
+2. thread programmong
