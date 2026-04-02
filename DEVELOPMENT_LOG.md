@@ -32,16 +32,21 @@ Document your development process as you work on the assignment. Add entries sho
 
 ## Your Development Log:
 
-### Entry 1 - [Date and Time]
-**What I did**: 
+### Entry 1 - [29/3/2026 1:00pm]
+**What I did**: added the feature 3
 
 **Details**: 
+- Add fields to track when each process was created and total time spent waiting
+- Calculate waiting time for each process
+- Display a summary table at the end showing: Process Name, Burst Time, Waiting
+Time
+- Use System.currentTimeMillis() to track time
 
-**Challenges**: 
+**Challenges**: Processes in Round Robin wait in line more than once.
 
-**Solution**: 
+**Solution**: Every time a process finishes waiting in line, I add that specific wait time to its total score.
 
-**Time spent**: 
+**Time spent**: 2 hours
 
 ---
 
